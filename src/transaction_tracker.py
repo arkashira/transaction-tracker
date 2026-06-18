@@ -4,15 +4,14 @@ from enum import Enum
 from typing import List
 
 class TransactionStatus(Enum):
-    PENDING = "pending"
-    SUCCESS = "success"
-    FAILED = "failed"
+    PENDING = 1
+    SUCCESS = 2
+    FAILED = 3
 
 @dataclass
 class Transaction:
     id: int
     status: TransactionStatus
-    amount: float
 
 class AutomatedTroubleshootingModule:
     def __init__(self):
@@ -25,7 +24,7 @@ class AutomatedTroubleshootingModule:
         resolved_transactions = []
         for transaction in self.transactions:
             if transaction.status == TransactionStatus.PENDING:
-                # Simulate resolving pending transactions
+                # Simulate resolution of common issues
                 transaction.status = TransactionStatus.SUCCESS
                 resolved_transactions.append(transaction)
         return resolved_transactions
@@ -33,17 +32,11 @@ class AutomatedTroubleshootingModule:
     def provide_real_time_status_updates(self):
         updates = []
         for transaction in self.transactions:
-            updates.append({
-                "id": transaction.id,
-                "status": transaction.status.value
-            })
+            updates.append({"id": transaction.id, "status": transaction.status.name})
         return updates
 
-    def send_notifications(self, transactions: List[Transaction]):
-        notifications = []
-        for transaction in transactions:
-            notifications.append({
-                "id": transaction.id,
-                "status": transaction.status.value
-            })
-        return notifications
+    def send_notifications(self, updates: List[dict]):
+        # Simulate sending notifications
+        print("Sending notifications:")
+        for update in updates:
+            print(f"Transaction {update['id']} is {update['status']}")
