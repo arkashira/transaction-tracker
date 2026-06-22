@@ -1,41 +1,44 @@
-import pytest
-from src.transaction_tracker import AutomatedTroubleshootingModule, Transaction, TransactionStatus
+from transaction_tracker import Transaction, TransactionStatus, TransactionTracker
 
 def test_add_transaction():
-    module = AutomatedTroubleshootingModule()
-    transaction = Transaction(1, TransactionStatus.PENDING)
-    module.add_transaction(transaction)
-    assert len(module.transactions) == 1
+    tracker = TransactionTracker()
+    transaction = Transaction(1, TransactionStatus.PENDING, 10.0)
+    tracker.add_transaction(transaction)
+    assert len(tracker.transactions) == 1
 
-def test_identify_and_resolve_common_issues():
-    module = AutomatedTroubleshootingModule()
-    transaction1 = Transaction(1, TransactionStatus.PENDING)
-    transaction2 = Transaction(2, TransactionStatus.FAILED)
-    module.add_transaction(transaction1)
-    module.add_transaction(transaction2)
-    resolved_transactions = module.identify_and_resolve_common_issues()
-    assert len(resolved_transactions) == 1
-    assert resolved_transactions[0].status == TransactionStatus.SUCCESS
+def test_get_transaction_status():
+    tracker = TransactionTracker()
+    transaction = Transaction(1, TransactionStatus.PENDING, 10.0)
+    tracker.add_transaction(transaction)
+    assert tracker.get_transaction_status(1) == TransactionStatus.PENDING
 
-def test_provide_real_time_status_updates():
-    module = AutomatedTroubleshootingModule()
-    transaction1 = Transaction(1, TransactionStatus.PENDING)
-    transaction2 = Transaction(2, TransactionStatus.SUCCESS)
-    module.add_transaction(transaction1)
-    module.add_transaction(transaction2)
-    updates = module.provide_real_time_status_updates()
-    assert len(updates) == 2
-    assert updates[0]["id"] == 1
-    assert updates[0]["status"] == "PENDING"
-    assert updates[1]["id"] == 2
-    assert updates[1]["status"] == "SUCCESS"
+def test_automate_troubleshooting():
+    tracker = TransactionTracker()
+    transaction = Transaction(1, TransactionStatus.FAILED, 10.0)
+    tracker.add_transaction(transaction)
+    assert tracker.automate_troubleshooting(1) == "Troubleshooting initiated for transaction 1"
 
-def test_send_notifications():
-    module = AutomatedTroubleshootingModule()
-    transaction1 = Transaction(1, TransactionStatus.PENDING)
-    transaction2 = Transaction(2, TransactionStatus.SUCCESS)
-    module.add_transaction(transaction1)
-    module.add_transaction(transaction2)
-    updates = module.provide_real_time_status_updates()
-    module.send_notifications(updates)
-    # No assertions, just verify that the function runs without errors
+def test_provide_real_time_status_update():
+    tracker = TransactionTracker()
+    transaction = Transaction(1, TransactionStatus.PENDING, 10.0)
+    tracker.add_transaction(transaction)
+    assert tracker.provide_real_time_status_update(1) == "Transaction 1 status: PENDING"
+
+def test_send_notification():
+    tracker = TransactionTracker()
+    transaction = Transaction(1, TransactionStatus.PENDING, 10.0)
+    tracker.add_transaction(transaction)
+    tracker.send_notification(1, "Test notification")
+    # No assertion, just verifying that the function runs without errors
+
+def test_edge_case_get_transaction_status():
+    tracker = TransactionTracker()
+    assert tracker.get_transaction_status(1) is None
+
+def test_edge_case_automate_troubleshooting():
+    tracker = TransactionTracker()
+    assert tracker.automate_troubleshooting(1) == "No troubleshooting needed for transaction 1"
+
+def test_edge_case_provide_real_time_status_update():
+    tracker = TransactionTracker()
+    assert tracker.provide_real_time_status_update(1) == "Transaction 1 not found"

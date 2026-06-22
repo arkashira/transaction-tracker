@@ -12,31 +12,34 @@ class TransactionStatus(Enum):
 class Transaction:
     id: int
     status: TransactionStatus
+    amount: float
 
-class AutomatedTroubleshootingModule:
+class TransactionTracker:
     def __init__(self):
         self.transactions = []
 
     def add_transaction(self, transaction: Transaction):
         self.transactions.append(transaction)
 
-    def identify_and_resolve_common_issues(self):
-        resolved_transactions = []
+    def get_transaction_status(self, transaction_id: int) -> TransactionStatus:
         for transaction in self.transactions:
-            if transaction.status == TransactionStatus.PENDING:
-                # Simulate resolution of common issues
-                transaction.status = TransactionStatus.SUCCESS
-                resolved_transactions.append(transaction)
-        return resolved_transactions
+            if transaction.id == transaction_id:
+                return transaction.status
+        return None
 
-    def provide_real_time_status_updates(self):
-        updates = []
-        for transaction in self.transactions:
-            updates.append({"id": transaction.id, "status": transaction.status.name})
-        return updates
+    def automate_troubleshooting(self, transaction_id: int) -> str:
+        transaction_status = self.get_transaction_status(transaction_id)
+        if transaction_status == TransactionStatus.FAILED:
+            return "Troubleshooting initiated for transaction {}".format(transaction_id)
+        else:
+            return "No troubleshooting needed for transaction {}".format(transaction_id)
 
-    def send_notifications(self, updates: List[dict]):
-        # Simulate sending notifications
-        print("Sending notifications:")
-        for update in updates:
-            print(f"Transaction {update['id']} is {update['status']}")
+    def provide_real_time_status_update(self, transaction_id: int) -> str:
+        transaction_status = self.get_transaction_status(transaction_id)
+        if transaction_status:
+            return "Transaction {} status: {}".format(transaction_id, transaction_status.name)
+        else:
+            return "Transaction {} not found".format(transaction_id)
+
+    def send_notification(self, transaction_id: int, message: str) -> None:
+        print("Notification sent for transaction {}: {}".format(transaction_id, message))
