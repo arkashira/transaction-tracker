@@ -1,44 +1,37 @@
-from transaction_tracker import Transaction, TransactionStatus, TransactionTracker
+from transaction_tracker import Transaction, TransactionTracker
+import pytest
+from datetime import datetime, timedelta
 
 def test_add_transaction():
     tracker = TransactionTracker()
-    transaction = Transaction(1, TransactionStatus.PENDING, 10.0)
+    transaction = Transaction(1, datetime.now(), 100.0, "success")
     tracker.add_transaction(transaction)
     assert len(tracker.transactions) == 1
 
-def test_get_transaction_status():
+def test_detect_issues():
     tracker = TransactionTracker()
-    transaction = Transaction(1, TransactionStatus.PENDING, 10.0)
-    tracker.add_transaction(transaction)
-    assert tracker.get_transaction_status(1) == TransactionStatus.PENDING
+    transaction1 = Transaction(1, datetime.now() - timedelta(minutes=10), 100.0, "failed")
+    transaction2 = Transaction(2, datetime.now(), 100.0, "success")
+    tracker.add_transaction(transaction1)
+    tracker.add_transaction(transaction2)
+    issues = tracker.detect_issues()
+    assert len(issues) == 1
+    assert issues[0].id == 1
 
-def test_automate_troubleshooting():
+def test_diagnose_issue():
     tracker = TransactionTracker()
-    transaction = Transaction(1, TransactionStatus.FAILED, 10.0)
-    tracker.add_transaction(transaction)
-    assert tracker.automate_troubleshooting(1) == "Troubleshooting initiated for transaction 1"
+    transaction = Transaction(1, datetime.now(), 1000.0, "failed")
+    diagnosis = tracker.diagnose_issue(transaction)
+    assert diagnosis == "High value transaction issue"
 
-def test_provide_real_time_status_update():
+def test_resolve_issue():
     tracker = TransactionTracker()
-    transaction = Transaction(1, TransactionStatus.PENDING, 10.0)
-    tracker.add_transaction(transaction)
-    assert tracker.provide_real_time_status_update(1) == "Transaction 1 status: PENDING"
+    transaction = Transaction(1, datetime.now(), 1000.0, "failed")
+    resolution = tracker.resolve_issue(transaction)
+    assert resolution == "Manual review required"
 
-def test_send_notification():
+def test_get_recommended_resolution():
     tracker = TransactionTracker()
-    transaction = Transaction(1, TransactionStatus.PENDING, 10.0)
-    tracker.add_transaction(transaction)
-    tracker.send_notification(1, "Test notification")
-    # No assertion, just verifying that the function runs without errors
-
-def test_edge_case_get_transaction_status():
-    tracker = TransactionTracker()
-    assert tracker.get_transaction_status(1) is None
-
-def test_edge_case_automate_troubleshooting():
-    tracker = TransactionTracker()
-    assert tracker.automate_troubleshooting(1) == "No troubleshooting needed for transaction 1"
-
-def test_edge_case_provide_real_time_status_update():
-    tracker = TransactionTracker()
-    assert tracker.provide_real_time_status_update(1) == "Transaction 1 not found"
+    transaction = Transaction(1, datetime.now(), 100.0, "failed")
+    resolution = tracker.get_recommended_resolution(transaction)
+    assert resolution == "Automated resolution applied"

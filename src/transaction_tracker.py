@@ -1,45 +1,61 @@
 import json
 from dataclasses import dataclass
-from enum import Enum
+from datetime import datetime, timedelta
 from typing import List
-
-class TransactionStatus(Enum):
-    PENDING = 1
-    SUCCESS = 2
-    FAILED = 3
 
 @dataclass
 class Transaction:
     id: int
-    status: TransactionStatus
+    timestamp: datetime
     amount: float
+    status: str
 
 class TransactionTracker:
     def __init__(self):
-        self.transactions = []
+        self.transactions: List[Transaction] = []
 
     def add_transaction(self, transaction: Transaction):
+        """Add a transaction to the internal list."""
         self.transactions.append(transaction)
 
-    def get_transaction_status(self, transaction_id: int) -> TransactionStatus:
+    def detect_issues(self) -> List[Transaction]:
+        """
+        Return a list of transactions that have a non‑success status and are older
+        than 5 minutes (i.e., the issue has persisted long enough to be considered
+        actionable).
+        """
+        issues = []
+        now = datetime.now()
         for transaction in self.transactions:
-            if transaction.id == transaction_id:
-                return transaction.status
-        return None
+            if transaction.status != "success" and transaction.timestamp + timedelta(minutes=5) < now:
+                issues.append(transaction)
+        return issues
 
-    def automate_troubleshooting(self, transaction_id: int) -> str:
-        transaction_status = self.get_transaction_status(transaction_id)
-        if transaction_status == TransactionStatus.FAILED:
-            return "Troubleshooting initiated for transaction {}".format(transaction_id)
+    def diagnose_issue(self, transaction: Transaction) -> str:
+        """
+        Diagnose a transaction based on its amount.
+
+        - Amount **greater than or equal to** 1000 is considered a high‑value issue.
+        - Anything lower is a low‑value issue.
+        """
+        if transaction.amount >= 1000:
+            return "High value transaction issue"
         else:
-            return "No troubleshooting needed for transaction {}".format(transaction_id)
+            return "Low value transaction issue"
 
-    def provide_real_time_status_update(self, transaction_id: int) -> str:
-        transaction_status = self.get_transaction_status(transaction_id)
-        if transaction_status:
-            return "Transaction {} status: {}".format(transaction_id, transaction_status.name)
+    def resolve_issue(self, transaction: Transaction) -> str:
+        """
+        Provide a resolution recommendation based on the diagnosis.
+
+        - High‑value issues require manual review.
+        - Low‑value issues can be handled automatically.
+        """
+        diagnosis = self.diagnose_issue(transaction)
+        if diagnosis == "High value transaction issue":
+            return "Manual review required"
         else:
-            return "Transaction {} not found".format(transaction_id)
+            return "Automated resolution applied"
 
-    def send_notification(self, transaction_id: int, message: str) -> None:
-        print("Notification sent for transaction {}: {}".format(transaction_id, message))
+    def get_recommended_resolution(self, transaction: Transaction) -> str:
+        """Convenience wrapper that returns the resolution for a given transaction."""
+        return self.resolve_issue(transaction)
