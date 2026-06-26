@@ -6,56 +6,51 @@ from typing import List
 @dataclass
 class Transaction:
     id: int
-    timestamp: datetime
-    amount: float
     status: str
+    timestamp: datetime
 
 class TransactionTracker:
     def __init__(self):
-        self.transactions: List[Transaction] = []
+        self.transactions = []
 
     def add_transaction(self, transaction: Transaction):
-        """Add a transaction to the internal list."""
         self.transactions.append(transaction)
 
-    def detect_issues(self) -> List[Transaction]:
-        """
-        Return a list of transactions that have a non‑success status and are older
-        than 5 minutes (i.e., the issue has persisted long enough to be considered
-        actionable).
-        """
-        issues = []
-        now = datetime.now()
+    def get_transaction_status(self, transaction_id: int):
         for transaction in self.transactions:
-            if transaction.status != "success" and transaction.timestamp + timedelta(minutes=5) < now:
-                issues.append(transaction)
-        return issues
+            if transaction.id == transaction_id:
+                return transaction.status
+        return None
 
-    def diagnose_issue(self, transaction: Transaction) -> str:
-        """
-        Diagnose a transaction based on its amount.
+    def get_delayed_transactions(self):
+        delayed_transactions = []
+        for transaction in self.transactions:
+            if transaction.status == "delayed":
+                delayed_transactions.append(transaction)
+        return delayed_transactions
 
-        - Amount **greater than or equal to** 1000 is considered a high‑value issue.
-        - Anything lower is a low‑value issue.
-        """
-        if transaction.amount >= 1000:
-            return "High value transaction issue"
-        else:
-            return "Low value transaction issue"
+    def get_failed_transactions(self):
+        failed_transactions = []
+        for transaction in self.transactions:
+            if transaction.status == "failed":
+                failed_transactions.append(transaction)
+        return failed_transactions
 
-    def resolve_issue(self, transaction: Transaction) -> str:
-        """
-        Provide a resolution recommendation based on the diagnosis.
+    def send_notifications(self):
+        delayed_transactions = self.get_delayed_transactions()
+        failed_transactions = self.get_failed_transactions()
+        notifications = []
+        for transaction in delayed_transactions + failed_transactions:
+            notification = {
+                "transaction_id": transaction.id,
+                "status": transaction.status,
+                "timestamp": transaction.timestamp.isoformat()
+            }
+            notifications.append(notification)
+        return notifications
 
-        - High‑value issues require manual review.
-        - Low‑value issues can be handled automatically.
-        """
-        diagnosis = self.diagnose_issue(transaction)
-        if diagnosis == "High value transaction issue":
-            return "Manual review required"
-        else:
-            return "Automated resolution applied"
+    def get_transaction_history(self):
+        return self.transactions
 
-    def get_recommended_resolution(self, transaction: Transaction) -> str:
-        """Convenience wrapper that returns the resolution for a given transaction."""
-        return self.resolve_issue(transaction)
+    def get_real_time_status_updates(self):
+        return [transaction.status for transaction in self.transactions]

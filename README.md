@@ -1,11 +1,16 @@
 # Transaction Tracker
+A real-time transaction monitoring system.
 
-A simple transaction tracker that detects and diagnoses transaction issues.
+## Features
+* Real-time status updates on transactions
+* Notifications for delayed or failed transactions
+* Transaction history and status updates
 
 ## Usage
-
 1. Create a `TransactionTracker` instance.
 2. Add transactions using the `add_transaction` method.
-3. Detect issues using the `detect_issues` method.
-4. Diagnose issues using the `diagnose_issue` method.
-5. Get the recommended resolution using the `get_recommended_resolution` method.
+3. Get transaction status using the `get_transaction_status` method.
+4. Get delayed or failed transactions using the `get_delayed_transactions` or `get_failed_transactions` methods.
+5. Send notifications using the `send_notifications` method.
+6. Get transaction history using the `get_transaction_history` method.
+7. Get real-time status updates using the `get_real_time_status_updates` method.
