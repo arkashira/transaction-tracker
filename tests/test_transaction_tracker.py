@@ -1,40 +1,50 @@
-import pytest
-from datetime import datetime, timedelta
-from transaction_tracker import Transaction, TransactionTracker, color_code_status
+import json
+from transaction_tracker import Transaction, TransactionTracker
 
-@pytest.fixture
-def transaction_tracker():
-    return TransactionTracker()
+def test_add_transaction():
+    tracker = TransactionTracker()
+    transaction = Transaction(1, "pending", "none")
+    tracker.add_transaction(transaction)
+    assert len(tracker.get_transactions()) == 1
 
-def test_add_transaction(transaction_tracker):
-    transaction = Transaction(1, datetime.now(), 1, 'Pending')
-    transaction_tracker.add_transaction(transaction)
-    assert len(transaction_tracker.transactions) == 1
+def test_get_transactions():
+    tracker = TransactionTracker()
+    transaction1 = Transaction(1, "pending", "none")
+    transaction2 = Transaction(2, "failed", "error")
+    tracker.add_transaction(transaction1)
+    tracker.add_transaction(transaction2)
+    assert len(tracker.get_transactions(status="pending")) == 1
+    assert len(tracker.get_transactions(issue="error")) == 1
 
-def test_get_transactions(transaction_tracker):
-    transaction1 = Transaction(1, datetime.now(), 1, 'Pending')
-    transaction2 = Transaction(2, datetime.now() + timedelta(seconds=1), 1, 'Success')
-    transaction_tracker.add_transaction(transaction1)
-    transaction_tracker.add_transaction(transaction2)
-    transactions = transaction_tracker.get_transactions()
-    assert len(transactions) == 2
+def test_sort_transactions():
+    tracker = TransactionTracker()
+    transaction1 = Transaction(1, "pending", "none")
+    transaction2 = Transaction(2, "failed", "error")
+    tracker.add_transaction(transaction1)
+    tracker.add_transaction(transaction2)
+    sorted_transactions = tracker.sort_transactions("id")
+    assert sorted_transactions[0].id == 1
 
-def test_get_transactions_with_filter(transaction_tracker):
-    transaction1 = Transaction(1, datetime.now(), 1, 'Pending')
-    transaction2 = Transaction(2, datetime.now() + timedelta(seconds=1), 2, 'Success')
-    transaction_tracker.add_transaction(transaction1)
-    transaction_tracker.add_transaction(transaction2)
-    transactions = transaction_tracker.get_transactions(merchant_id=1)
-    assert len(transactions) == 1
+def test_resolve_issue():
+    tracker = TransactionTracker()
+    transaction = Transaction(1, "pending", "error")
+    tracker.add_transaction(transaction)
+    tracker.resolve_issue(1, "resolved")
+    assert tracker.get_transactions()[0].issue == "resolved"
 
-def test_get_failed_transactions(transaction_tracker):
-    transaction1 = Transaction(1, datetime.now(), 1, 'Failed')
-    transaction2 = Transaction(2, datetime.now() + timedelta(seconds=1), 1, 'Success')
-    transaction_tracker.add_transaction(transaction1)
-    transaction_tracker.add_transaction(transaction2)
-    failed_transactions = transaction_tracker.get_failed_transactions()
-    assert len(failed_transactions) == 1
+def test_to_json():
+    tracker = TransactionTracker()
+    transaction = Transaction(1, "pending", "none")
+    tracker.add_transaction(transaction)
+    json_data = tracker.to_json()
+    assert json.loads(json_data)[0]["id"] == 1
 
-def test_color_code_status():
-    assert color_code_status('Failed') == '\x1b[91mFailed\x1b[0m'
-    assert color_code_status('Success') == 'Success'
+def test_resolve_issue_not_found():
+    tracker = TransactionTracker()
+    transaction = Transaction(1, "pending", "error")
+    tracker.add_transaction(transaction)
+    try:
+        tracker.resolve_issue(2, "resolved")
+        assert False
+    except ValueError:
+        assert True
